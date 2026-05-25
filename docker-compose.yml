@@ -1,0 +1,10 @@
+services:
+  apod-explorer:
+    build: .
+    container_name: nasa-apod-explorer
+    ports:
+      - "8080:8080"
+    environment:
+      - NASA_API_KEY=${NASA_API_KEY:-BnJVPiHXWagRnLcEo6PqC4h0wwpFS6Zr8YvrQqKt}
+      - NASA_API_BASE_URL=https://api.nasa.gov/planetary/apod
+    restart: unless-stopped
