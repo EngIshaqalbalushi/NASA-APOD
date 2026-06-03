@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NASA APOD | API &amp; Developers</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "surface-dim": "#131313",
+                "on-primary-fixed-variant": "#004f54",
+                "surface-container-high": "#2a2a2a",
+                "on-background": "#e5e2e1",
+                "outline": "#849495",
+                "primary": "#dbfcff",
+                "secondary": "#e1b6ff",
+                "on-secondary-container": "#faebff",
+                "error-container": "#93000a",
+                "inverse-surface": "#e5e2e1",
+                "on-secondary-fixed-variant": "#6c00ae",
+                "secondary-fixed": "#f2daff",
+                "on-secondary-fixed": "#2e004e",
+                "secondary-container": "#a20fff",
+                "on-primary": "#00363a",
+                "secondary-fixed-dim": "#e1b6ff",
+                "surface": "#131313",
+                "surface-container-highest": "#353534",
+                "primary-container": "#00f0ff",
+                "on-error-container": "#ffdad6",
+                "background": "#131313",
+                "on-tertiary-fixed-variant": "#444652",
+                "surface-variant": "#353534",
+                "surface-container-low": "#1c1b1b",
+                "inverse-primary": "#006970",
+                "on-primary-container": "#006970",
+                "on-surface": "#e5e2e1",
+                "surface-tint": "#00dbe9",
+                "tertiary-fixed": "#e1e1f0",
+                "on-error": "#690005",
+                "outline-variant": "#3b494b",
+                "inverse-on-surface": "#313030",
+                "tertiary-fixed-dim": "#c5c5d4",
+                "on-tertiary-container": "#5c5e6a",
+                "on-primary-fixed": "#002022",
+                "primary-fixed": "#7df4ff",
+                "surface-container-lowest": "#0e0e0e",
+                "tertiary": "#f6f4ff",
+                "surface-bright": "#3a3939",
+                "on-secondary": "#4c007c",
+                "surface-container": "#201f1f",
+                "tertiary-container": "#d8d8e7",
+                "error": "#ffb4ab",
+                "on-tertiary-fixed": "#191b26",
+                "on-tertiary": "#2e303b",
+                "primary-fixed-dim": "#00dbe9",
+                "on-surface-variant": "#b9cacb"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+            },
+            "spacing": {
+                "unit": "8px",
+                "gutter": "24px",
+                "margin-desktop": "64px",
+                "margin-mobile": "20px",
+                "container-max": "1440px"
+            },
+            "fontFamily": {
+                "display-lg-mobile": ["Space Grotesk"],
+                "headline-lg": ["Space Grotesk"],
+                "data-point": ["JetBrains Mono"],
+                "display-lg": ["Space Grotesk"],
+                "headline-lg-mobile": ["Space Grotesk"],
+                "label-caps": ["JetBrains Mono"],
+                "body-md": ["Inter"]
+            },
+            "fontSize": {
+                "display-lg-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                "data-point": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                "display-lg": ["72px", {"lineHeight": "80px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "500"}],
+                "body-md": ["16px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(11, 13, 23, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        }
+        .code-syntax-string { color: #dbfcff; }
+        .code-syntax-key { color: #e1b6ff; }
+        .code-syntax-bool { color: #f2daff; }
+        .neon-border-glow:focus-within {
+            border-bottom-color: #00dbe9;
+            box-shadow: 0 4px 12px -2px rgba(0, 219, 233, 0.3);
+        }
+        .hud-corner::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 10px; height: 10px;
+            border-top: 2px solid #00dbe9;
+            border-left: 2px solid #00dbe9;
+        }
+        .hud-corner::after {
+            content: '';
+            position: absolute;
+            bottom: 0; right: 0;
+            width: 10px; height: 10px;
+            border-bottom: 2px solid #00dbe9;
+            border-right: 2px solid #00dbe9;
+        }
+    #chatbot-btn { position: fixed; bottom: 24px; right: 24px; z-index: 999; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #00dbe9, #a20fff); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,219,233,0.3); transition: all 0.3s; }
+    #chatbot-btn:hover { transform: scale(1.1); box-shadow: 0 6px 30px rgba(0,219,233,0.5); }
+    #chatbot-btn .material-symbols-outlined { color: #00363a; font-size: 28px; }
+    #chatbot-window { position: fixed; bottom: 90px; right: 24px; z-index: 998; width: 360px; height: 500px; max-height: calc(100vh - 200px); background: rgba(19,19,19,0.95); backdrop-filter: blur(20px); border: 1px solid rgba(0,219,233,0.2); border-radius: 16px; display: none; flex-direction: column; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.8); }
+    #chatbot-window.open { display: flex; }
+    #chatbot-header { padding: 16px 20px; background: rgba(0,219,233,0.1); border-bottom: 1px solid rgba(0,219,233,0.15); display: flex; justify-content: space-between; align-items: center; }
+    #chatbot-header span { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #dbfcff; letter-spacing: 0.05em; }
+    #chatbot-header button { background: none; border: none; color: #b9cacb; cursor: pointer; font-size: 20px; font-family: 'Material Symbols Outlined'; }
+    #chatbot-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+    #chatbot-messages::-webkit-scrollbar { width: 4px; }
+    #chatbot-messages::-webkit-scrollbar-thumb { background: #3b494b; border-radius: 4px; }
+    .chatbot-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 13px; line-height: 1.5; animation: fadeIn 0.3s ease; }
+    .chatbot-msg.bot { align-self: flex-start; background: rgba(32,31,31,0.8); color: #e5e2e1; border: 1px solid rgba(255,255,255,0.05); }
+    .chatbot-msg.user { align-self: flex-end; background: rgba(0,219,233,0.15); color: #dbfcff; border: 1px solid rgba(0,219,233,0.2); }
+    #chatbot-input-area { display: flex; padding: 12px 16px; gap: 8px; border-top: 1px solid rgba(255,255,255,0.05); }
+    #chatbot-input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 14px; color: #e5e2e1; font-family: 'Inter', sans-serif; font-size: 13px; outline: none; }
+    #chatbot-input:focus { border-color: rgba(0,219,233,0.4); }
+    #chatbot-send { background: rgba(0,219,233,0.2); border: 1px solid rgba(0,219,233,0.3); border-radius: 8px; padding: 8px 16px; color: #dbfcff; cursor: pointer; font-size: 13px; }
+    #chatbot-send:hover { background: rgba(0,219,233,0.3); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .typing-dots { display: flex; gap: 4px; padding: 10px 14px; align-items: center; }
+    .typing-dots span { width: 6px; height: 6px; border-radius: 50%; background: #b9cacb; animation: bounce 1.4s infinite; }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-4px); } }
+    </style>
+</head>
+<body class="bg-background text-on-background selection:bg-primary-container selection:text-on-primary-container font-body-md overflow-x-hidden">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-surface/40 backdrop-blur-xl border-b border-outline-variant/20 transition-all duration-300 ease-in-out">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="font-display-lg text-headline-lg-mobile md:text-headline-lg tracking-tighter text-primary">NASA APOD</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-300 font-label-caps text-label-caps" href="/">Home</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-300 font-label-caps text-label-caps" href="/gallery">Gallery</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-300 font-label-caps text-label-caps" href="/about">About</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-300 font-label-caps text-label-caps" href="/community">Community</a>
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-label-caps text-label-caps" href="/api-docs">API</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary hover:bg-primary/10 p-2 rounded-full transition-all duration-300" data-icon="search"></button>
+<button class="material-symbols-outlined text-primary hover:bg-primary/10 p-2 rounded-full transition-all duration-300" data-icon="account_circle"></button>
+</div>
+</div>
+</nav>
+<main class="pt-32 pb-20">
+<!-- Hero Section -->
+<section class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop mb-24">
+<div class="relative py-16 md:py-24 overflow-hidden rounded-xl">
+<div class="absolute inset-0 z-0 opacity-40">
+<img class="w-full h-full object-cover grayscale brightness-50" data-alt="A cinematic, high-resolution view of Earth from low orbit at night, with city lights glowing like golden networks. The deep obsidian black of space surrounds the planet, illuminated by a faint cyan atmosphere. The visual style is highly technical and modern, emphasizing the vastness and precision of space exploration with sharp focus and deep shadows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiEIiGUl5bGAFe3GEKvNSYTAtEtIwUKhidyGLFmf5hpddFram0WiaIgxALESzVHqWBKbb5IF7f5VyOIpk9PKl7Bhp326UKLz-PYY3wiHMrLU7F5A3Bj_Jq5WyN6PlTklnX9dDELa6EArBd0qjEHrIG9n8odBDJqe49R-PfoevaJxOCpEJXURRkskWxI3TMDlweqIzKmnxzPLooKFbUmGhviDNJ3VgX9Q_T4GewzOWYoqOifTyVOgxqVtY1TS5Ri1K_9LP9ev3oLIDu"/>
+<div class="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background"></div>
+</div>
+<div class="relative z-10 max-w-2xl">
+<span class="font-label-caps text-label-caps text-secondary mb-4 block tracking-[0.2em] uppercase">Developer Portal</span>
+<h1 class="font-display-lg text-display-lg-mobile md:text-display-lg mb-6 leading-tight">Bring the Cosmos <br/><span class="text-primary">to Your Apps</span></h1>
+<p class="font-body-md text-body-md text-on-surface-variant mb-10 max-w-lg">
+                        Access the Astronomy Picture of the Day through our high-performance REST API. Automate celestial discovery and power your projects with NASA's vast archive of imagery.
+                    </p>
+<div class="flex flex-wrap gap-4">
+<button class="bg-primary-fixed-dim text-on-primary-fixed px-8 py-4 rounded-lg font-label-caps text-label-caps font-bold hover:brightness-110 transition-all flex items-center gap-2">
+                            GET API KEY <span class="material-symbols-outlined" data-icon="rocket_launch"></span>
+</button>
+<button class="border border-primary/40 text-primary px-8 py-4 rounded-lg font-label-caps text-label-caps font-bold hover:bg-primary/10 transition-all backdrop-blur-md">
+                            READ DOCS
+                        </button>
+</div>
+</div>
+</div>
+</section>
+<!-- API Specs Grid -->
+<section class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop mb-32">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+<!-- Documentation Content -->
+<div class="space-y-12">
+<div>
+<h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg mb-6 flex items-center gap-3">
+<span class="w-8 h-[2px] bg-primary"></span> The Endpoint
+                        </h2>
+<div class="glass-panel p-6 rounded-lg font-data-point text-data-point border-l-4 border-l-primary flex items-center justify-between">
+<span class="text-on-surface">GET https://api.nasa.gov/planetary/apod</span>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors" data-icon="content_copy"></button>
+</div>
+</div>
+<div>
+<h3 class="font-label-caps text-label-caps text-primary mb-6 tracking-widest uppercase">Query Parameters</h3>
+<div class="space-y-6">
+<div class="flex gap-4 items-start pb-6 border-b border-outline-variant/20">
+<code class="font-data-point text-secondary bg-secondary/10 px-2 py-1 rounded">api_key</code>
+<div class="flex-1">
+<p class="font-body-md text-on-surface font-semibold mb-1">Required string</p>
+<p class="font-body-md text-on-surface-variant text-sm">Valid API key for authentication. Default: <span class="font-data-point italic">DEMO_KEY</span></p>
+</div>
+</div>
+<div class="flex gap-4 items-start pb-6 border-b border-outline-variant/20">
+<code class="font-data-point text-secondary bg-secondary/10 px-2 py-1 rounded">date</code>
+<div class="flex-1">
+<p class="font-body-md text-on-surface font-semibold mb-1">Optional string (YYYY-MM-DD)</p>
+<p class="font-body-md text-on-surface-variant text-sm">The date of the APOD image to retrieve. Defaults to today's date.</p>
+</div>
+</div>
+<div class="flex gap-4 items-start pb-6 border-b border-outline-variant/20">
+<code class="font-data-point text-secondary bg-secondary/10 px-2 py-1 rounded">concept_tags</code>
+<div class="flex-1">
+<p class="font-body-md text-on-surface font-semibold mb-1">Optional boolean</p>
+<p class="font-body-md text-on-surface-variant text-sm">Returns relevant keywords for the image when set to <span class="font-data-point">True</span>.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Code Example -->
+<div class="relative">
+<div class="glass-panel rounded-xl overflow-hidden hud-corner">
+<div class="bg-surface-container-highest/40 px-6 py-4 border-b border-outline-variant/20 flex items-center justify-between">
+<div class="flex gap-2">
+<div class="w-3 h-3 rounded-full bg-red-500/50"></div>
+<div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+<div class="w-3 h-3 rounded-full bg-green-500/50"></div>
+</div>
+<span class="font-label-caps text-[10px] text-on-surface-variant tracking-tighter">SAMPLE_RESPONSE.JSON</span>
+</div>
+<div class="p-8 font-data-point text-sm leading-relaxed overflow-x-auto whitespace-pre">
+<span class="code-syntax-key">{</span>
+<span class="code-syntax-key">"date"</span>: <span class="code-syntax-string">"2024-10-24"</span>,
+  <span class="code-syntax-key">"explanation"</span>: <span class="code-syntax-string">"The magnificent Sombrero Galaxy (M104) is a... "</span>,
+  <span class="code-syntax-key">"hdurl"</span>: <span class="code-syntax-string">"https://apod.nasa.gov/apod/image/2410/M104_Hubble.jpg"</span>,
+  <span class="code-syntax-key">"media_type"</span>: <span class="code-syntax-string">"image"</span>,
+  <span class="code-syntax-key">"service_version"</span>: <span class="code-syntax-string">"v1"</span>,
+  <span class="code-syntax-key">"title"</span>: <span class="code-syntax-string">"The Sombrero Galaxy in Infrared"</span>,
+  <span class="code-syntax-key">"url"</span>: <span class="code-syntax-string">"https://apod.nasa.gov/apod/image/2410/M104_Hubble_960.jpg"</span>,
+  <span class="code-syntax-key">"concept_tags"</span>: <span class="code-syntax-bool">true</span>
+<span class="code-syntax-key">}</span></div>
+</div>
+<!-- Decorative HUD line -->
+<div class="absolute -right-6 top-1/2 w-12 h-[1px] bg-primary hidden xl:block"></div>
+<div class="absolute -right-6 top-1/2 mt-4 w-4 h-[1px] bg-primary hidden xl:block"></div>
+</div>
+</div>
+</section>
+<!-- Get Your Key Section -->
+<section class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop mb-32">
+<div class="glass-panel p-12 md:p-20 rounded-2xl relative overflow-hidden text-center">
+<div class="absolute inset-0 z-0 opacity-10">
+<div class="grid grid-cols-12 h-full w-full">
+<div class="border-r border-outline-variant"></div>
+<div class="border-r border-outline-variant"></div>
+<div class="border-r border-outline-variant"></div>
+<div class="border-r border-outline-variant"></div>
+<div class="border-r border-outline-variant"></div>
+<div class="border-r border-outline-variant"></div>
+<div class="border-r border-outline-variant"></div>
+<div class="border-r border-outline-variant"></div>
+<div class="border-r border-outline-variant"></div>
+<div class="border-r border-outline-variant"></div>
+<div class="border-r border-outline-variant"></div>
+<div class="border-r border-outline-variant"></div>
+</div>
+</div>
+<div class="relative z-10 max-w-xl mx-auto">
+<h2 class="font-display-lg text-headline-lg-mobile md:text-headline-lg mb-4">Start Building Today</h2>
+<p class="font-body-md text-on-surface-variant mb-10">Join thousands of developers integrating NASA data into their workflows. API keys are free and issued instantly.</p>
+<form class="flex flex-col md:flex-row gap-4">
+<div class="flex-1 relative group">
+<input class="w-full bg-surface-container-low/50 border-0 border-b-2 border-outline-variant/40 py-4 px-0 font-data-point text-on-surface focus:ring-0 focus:border-primary transition-all neon-border-glow placeholder:text-outline-variant" placeholder="ENTER YOUR EMAIL" type="email"/>
+</div>
+<button class="bg-primary text-on-primary font-label-caps text-label-caps font-bold px-10 py-4 rounded hover:bg-white hover:text-black transition-all" type="submit">
+                            REQUEST KEY
+                        </button>
+</form>
+<p class="mt-6 font-label-caps text-[10px] text-outline tracking-widest">NO COST • INSTANT APPROVAL • NASA GOV ACCESS</p>
+</div>
+</div>
+</section>
+<!-- Bento Grid / Developer Features -->
+<section class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop mb-32">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Rate Limits -->
+<div class="glass-panel p-8 rounded-xl flex flex-col justify-between h-64 border-t-4 border-t-primary">
+<span class="material-symbols-outlined text-primary text-4xl" data-icon="speed"></span>
+<div>
+<h4 class="font-label-caps text-label-caps text-on-surface mb-2">High Rate Limits</h4>
+<p class="text-sm text-on-surface-variant">Up to 1,000 requests per hour per API key, allowing for robust caching and data scraping.</p>
+</div>
+</div>
+<!-- CORS -->
+<div class="glass-panel p-8 rounded-xl flex flex-col justify-between h-64 border-t-4 border-t-secondary">
+<span class="material-symbols-outlined text-secondary text-4xl" data-icon="share"></span>
+<div>
+<h4 class="font-label-caps text-label-caps text-on-surface mb-2">CORS Support</h4>
+<p class="text-sm text-on-surface-variant">Fully enabled Cross-Origin Resource Sharing for direct browser-to-NASA integrations.</p>
+</div>
+</div>
+<!-- Archive -->
+<div class="glass-panel p-8 rounded-xl flex flex-col justify-between h-64 border-t-4 border-t-tertiary-fixed-dim">
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-4xl" data-icon="history"></span>
+<div>
+<h4 class="font-label-caps text-label-caps text-on-surface mb-2">Complete Archive</h4>
+<p class="text-sm text-on-surface-variant">Full access to the APOD historical database dating back to June 16, 1995.</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full mt-20 bg-surface-container-lowest/80 backdrop-blur-md border-t border-outline-variant/10 transition-opacity duration-200">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter px-margin-mobile md:px-margin-desktop py-12 max-w-container-max mx-auto">
+<div class="space-y-4">
+<div class="font-label-caps text-label-caps text-primary">NASA APOD</div>
+<p class="font-body-md text-on-surface-variant text-sm">Empowering humanity through cosmic visual data. Operated by NASA Goddard Space Flight Center.</p>
+</div>
+<div>
+<h5 class="font-label-caps text-[11px] text-on-surface mb-4 tracking-widest uppercase">Quick Links</h5>
+<ul class="space-y-2">
+<li><a class="text-on-surface-variant hover:text-secondary transition-colors font-body-md text-sm" href="#">NASA.gov</a></li>
+<li><a class="text-on-surface-variant hover:text-secondary transition-colors font-body-md text-sm" href="#">Privacy Policy</a></li>
+<li><a class="text-on-surface-variant hover:text-secondary transition-colors font-body-md text-sm" href="#">Contact</a></li>
+<li><a class="text-primary hover:text-secondary transition-colors font-body-md text-sm" href="#">API Documentation</a></li>
+</ul>
+</div>
+<div class="flex flex-col justify-between items-end">
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer" data-icon="public"></span>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer" data-icon="terminal"></span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant text-xs mt-8">
+                    © ishaqalbalushi693@gmail.com
+                </p>
+</div>
+</div>
+</footer>
+<script>
+        // Smooth reveal animations on scroll
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-8');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section').forEach(section => {
+            section.classList.add('transition-all', 'duration-700', 'opacity-0', 'translate-y-8');
+            observer.observe(section);
+        });
+
+        // Header glass interaction
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 20) {
+                nav.classList.add('py-2', 'bg-surface/80');
+                nav.classList.remove('py-4', 'bg-surface/40');
+            } else {
+                nav.classList.add('py-4', 'bg-surface/40');
+                nav.classList.remove('py-2', 'bg-surface/80');
+            }
+        });
+    const chatbotBtn = document.createElement('div');
+    chatbotBtn.id = 'chatbot-btn';
+    chatbotBtn.innerHTML = '<span class="material-symbols-outlined">smart_toy</span>';
+    document.body.appendChild(chatbotBtn);
+    const chatbotWin = document.createElement('div');
+    chatbotWin.id = 'chatbot-window';
+    chatbotWin.innerHTML = '<div id="chatbot-header"><span>▲ COSMOS ASSISTANT</span><button id="chatbot-close">close</button></div><div id="chatbot-messages"><div class="chatbot-msg bot">Hello, I\'m your Cosmos Assistant. Ask me about APOD, space, or use the site!</div></div><div id="chatbot-input-area"><input id="chatbot-input" placeholder="Ask me anything..." autocomplete="off"/><button id="chatbot-send">Send</button></div>';
+    document.body.appendChild(chatbotWin);
+    const chatMessages = document.getElementById('chatbot-messages');
+    const chatInput = document.getElementById('chatbot-input');
+    const chatSend = document.getElementById('chatbot-send');
+    function addMessage(text, role) { const div = document.createElement('div'); div.className = 'chatbot-msg ' + role; div.textContent = text; chatMessages.appendChild(div); chatMessages.scrollTop = chatMessages.scrollHeight; }
+    function showTyping() { const div = document.createElement('div'); div.className = 'chatbot-msg bot typing-dots'; div.id = 'typing-indicator'; div.innerHTML = '<span></span><span></span><span></span>'; chatMessages.appendChild(div); chatMessages.scrollTop = chatMessages.scrollHeight; }
+    function hideTyping() { const el = document.getElementById('typing-indicator'); if (el) el.remove(); }
+    async function handleChat(msg) {
+      try { const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg }) }); const d = await r.json(); return d.reply || 'Sorry, I could not process that.'; }
+      catch(e) { return 'Sorry, I am having trouble connecting. Please try again later.'; }
+    }
+    async function sendMessage() {
+      const text = chatInput.value.trim();
+      if (!text) return;
+      addMessage(text, 'user');
+      chatInput.value = '';
+      showTyping();
+      const reply = await handleChat(text);
+      hideTyping();
+      addMessage(reply, 'bot');
+    }
+    chatbotBtn.addEventListener('click', () => chatbotWin.classList.toggle('open'));
+    document.getElementById('chatbot-close').addEventListener('click', () => chatbotWin.classList.remove('open'));
+    chatSend.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
+</script>
+</body></html>

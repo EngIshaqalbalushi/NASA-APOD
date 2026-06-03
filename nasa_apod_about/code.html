@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>About NASA APOD | The Cosmic Story</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            background: radial-gradient(circle at top right, #1a1c2c, #0e0e0e);
+            scroll-behavior: smooth;
+        }
+        .glass-panel {
+            background: rgba(19, 19, 19, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .hud-line {
+            background: linear-gradient(90deg, transparent, #00dbe9, transparent);
+            height: 1px;
+            width: 100%;
+        }
+        .hud-corner {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border: 1px solid #00dbe9;
+        }
+        .hud-corner-tl { top: 0; left: 0; border-right: none; border-bottom: none; }
+        .hud-corner-tr { top: 0; right: 0; border-left: none; border-bottom: none; }
+        .hud-corner-bl { bottom: 0; left: 0; border-right: none; border-top: none; }
+        .hud-corner-br { bottom: 0; right: 0; border-left: none; border-top: none; }
+    #chatbot-btn { position: fixed; bottom: 24px; right: 24px; z-index: 999; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #00dbe9, #a20fff); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,219,233,0.3); transition: all 0.3s; }
+    #chatbot-btn:hover { transform: scale(1.1); box-shadow: 0 6px 30px rgba(0,219,233,0.5); }
+    #chatbot-btn .material-symbols-outlined { color: #00363a; font-size: 28px; }
+    #chatbot-window { position: fixed; bottom: 90px; right: 24px; z-index: 998; width: 360px; height: 500px; max-height: calc(100vh - 200px); background: rgba(19,19,19,0.95); backdrop-filter: blur(20px); border: 1px solid rgba(0,219,233,0.2); border-radius: 16px; display: none; flex-direction: column; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.8); }
+    #chatbot-window.open { display: flex; }
+    #chatbot-header { padding: 16px 20px; background: rgba(0,219,233,0.1); border-bottom: 1px solid rgba(0,219,233,0.15); display: flex; justify-content: space-between; align-items: center; }
+    #chatbot-header span { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #dbfcff; letter-spacing: 0.05em; }
+    #chatbot-header button { background: none; border: none; color: #b9cacb; cursor: pointer; font-size: 20px; font-family: 'Material Symbols Outlined'; }
+    #chatbot-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+    #chatbot-messages::-webkit-scrollbar { width: 4px; }
+    #chatbot-messages::-webkit-scrollbar-thumb { background: #3b494b; border-radius: 4px; }
+    .chatbot-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 13px; line-height: 1.5; animation: fadeIn 0.3s ease; }
+    .chatbot-msg.bot { align-self: flex-start; background: rgba(32,31,31,0.8); color: #e5e2e1; border: 1px solid rgba(255,255,255,0.05); }
+    .chatbot-msg.user { align-self: flex-end; background: rgba(0,219,233,0.15); color: #dbfcff; border: 1px solid rgba(0,219,233,0.2); }
+    #chatbot-input-area { display: flex; padding: 12px 16px; gap: 8px; border-top: 1px solid rgba(255,255,255,0.05); }
+    #chatbot-input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 14px; color: #e5e2e1; font-family: 'Inter', sans-serif; font-size: 13px; outline: none; }
+    #chatbot-input:focus { border-color: rgba(0,219,233,0.4); }
+    #chatbot-send { background: rgba(0,219,233,0.2); border: 1px solid rgba(0,219,233,0.3); border-radius: 8px; padding: 8px 16px; color: #dbfcff; cursor: pointer; font-size: 13px; }
+    #chatbot-send:hover { background: rgba(0,219,233,0.3); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .typing-dots { display: flex; gap: 4px; padding: 10px 14px; align-items: center; }
+    .typing-dots span { width: 6px; height: 6px; border-radius: 50%; background: #b9cacb; animation: bounce 1.4s infinite; }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-4px); } }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "#131313",
+                        "on-primary-fixed-variant": "#004f54",
+                        "surface-container-high": "#2a2a2a",
+                        "on-background": "#e5e2e1",
+                        "outline": "#849495",
+                        "primary": "#dbfcff",
+                        "secondary": "#e1b6ff",
+                        "on-secondary-container": "#faebff",
+                        "error-container": "#93000a",
+                        "inverse-surface": "#e5e2e1",
+                        "on-secondary-fixed-variant": "#6c00ae",
+                        "secondary-fixed": "#f2daff",
+                        "on-secondary-fixed": "#2e004e",
+                        "secondary-container": "#a20fff",
+                        "on-primary": "#00363a",
+                        "secondary-fixed-dim": "#e1b6ff",
+                        "surface": "#131313",
+                        "surface-container-highest": "#353534",
+                        "primary-container": "#00f0ff",
+                        "on-error-container": "#ffdad6",
+                        "background": "#131313",
+                        "on-tertiary-fixed-variant": "#444652",
+                        "surface-variant": "#353534",
+                        "surface-container-low": "#1c1b1b",
+                        "inverse-primary": "#006970",
+                        "on-primary-container": "#006970",
+                        "on-surface": "#e5e2e1",
+                        "surface-tint": "#00dbe9",
+                        "tertiary-fixed": "#e1e1f0",
+                        "on-error": "#690005",
+                        "outline-variant": "#3b494b",
+                        "inverse-on-surface": "#313030",
+                        "tertiary-fixed-dim": "#c5c5d4",
+                        "on-tertiary-container": "#5c5e6a",
+                        "on-primary-fixed": "#002022",
+                        "primary-fixed": "#7df4ff",
+                        "surface-container-lowest": "#0e0e0e",
+                        "tertiary": "#f6f4ff",
+                        "surface-bright": "#3a3939",
+                        "on-secondary": "#4c007c",
+                        "surface-container": "#201f1f",
+                        "tertiary-container": "#d8d8e7",
+                        "error": "#ffb4ab",
+                        "on-tertiary-fixed": "#191b26",
+                        "on-tertiary": "#2e303b",
+                        "primary-fixed-dim": "#00dbe9",
+                        "on-surface-variant": "#b9cacb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "gutter": "24px",
+                        "margin-desktop": "64px",
+                        "margin-mobile": "20px",
+                        "container-max": "1440px"
+                    },
+                    "fontFamily": {
+                        "display-lg-mobile": ["Space Grotesk"],
+                        "headline-lg": ["Space Grotesk"],
+                        "data-point": ["JetBrains Mono"],
+                        "display-lg": ["Space Grotesk"],
+                        "headline-lg-mobile": ["Space Grotesk"],
+                        "label-caps": ["JetBrains Mono"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                        "data-point": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "display-lg": ["72px", {"lineHeight": "80px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "28px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="text-on-surface font-body-md overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 bg-surface/40 backdrop-blur-xl border-b border-outline-variant/20">
+<nav class="flex justify-between items-center px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="flex items-center gap-4">
+<span class="font-display-lg text-headline-lg-mobile tracking-tighter text-primary">NASA APOD</span>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="/">Home</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="/gallery">Gallery</a>
+<a class="font-label-caps text-label-caps text-primary font-bold border-b-2 border-primary pb-1" href="/about">About</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="/community">Community</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="/api-docs">API</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-primary/10 transition-all rounded-full">
+<span class="material-symbols-outlined text-primary" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</nav>
+</header>
+<main class="relative">
+<!-- Hero Section -->
+<section class="relative min-h-screen flex flex-col items-center justify-center pt-24 px-margin-mobile md:px-margin-desktop text-center overflow-hidden">
+<div class="absolute inset-0 z-0 opacity-40">
+<img class="w-full h-full object-cover" data-alt="A cinematic wide shot of the deep cosmic night sky filled with millions of sparkling stars and distant swirling nebulae in shades of deep blue, violet, and obsidian. The lighting is ethereal and mysterious, suggesting the vast infinity of space. The overall aesthetic is clean, professional, and astronomical, serving as a silent backdrop for scientific discovery." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuITT73004X17eomBg4fSKotn0-et0qc4RVpuBKVVLHAKUkmr3BoyYzYNn4anXufDhQMiM-UU9BOm5hYn-lSNYSqUK2pbiTWfVijLa_AcCYn4wZKnEhHG8aU6L9Dk4BPs2tDL4DpmX9bJJMc067NVPqKOGEJPkeOOMv22hj87x2ewQhXbb1JN0eifwfe1ugVZAyopbKCgdwk4HbrpXS_mx1Jp57ntA1n1Ekgp3gbZqWmuKPVDL1L5-FKE5U4xNb2itncoGKRdGd8HH"/>
+</div>
+<div class="relative z-10 max-w-4xl mx-auto">
+<p class="font-label-caps text-label-caps text-primary mb-4 tracking-widest">ESTABLISHED 1995</p>
+<h1 class="font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-6 leading-none">The Universe, One Day at a Time.</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto opacity-90">
+                    Astronomy Picture of the Day (APOD) is a NASA-led digital repository of cosmic wonders. Since its inception, it has served as a daily window into the mysteries of the universe, bridging the gap between professional astrophysics and the curious public.
+                </p>
+</div>
+<div class="mt-16 animate-bounce">
+<span class="material-symbols-outlined text-primary" data-icon="expand_more">expand_more</span>
+</div>
+</section>
+<!-- The Mission (Bento Grid Style) -->
+<section class="py-24 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+<div class="mb-16">
+<div class="hud-line mb-4"></div>
+<h2 class="font-headline-lg text-headline-lg text-primary uppercase tracking-wider">01. The Mission</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-8 h-auto">
+<!-- Large Content Card -->
+<div class="md:col-span-8 glass-panel p-8 md:p-12 relative">
+<div class="hud-corner hud-corner-tl"></div>
+<div class="hud-corner hud-corner-tr"></div>
+<h3 class="font-headline-lg text-headline-lg-mobile text-primary mb-6">Scientific Public Outreach</h3>
+<p class="text-on-surface-variant mb-6 text-lg">
+                        The primary goal of APOD is to provide a high-quality astronomical image or video each day, accompanied by a brief explanation written by a professional astronomer. It is the most popular astronomy-related site in the world, translated into over 20 languages.
+                    </p>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-6 mt-12">
+<div class="text-center">
+<span class="font-data-point text-3xl text-primary block mb-1">10k+</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">DAILY ENTRIES</span>
+</div>
+<div class="text-center">
+<span class="font-data-point text-3xl text-primary block mb-1">20+</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">LANGUAGES</span>
+</div>
+<div class="text-center">
+<span class="font-data-point text-3xl text-primary block mb-1">1M+</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">DAILY VIEWS</span>
+</div>
+</div>
+</div>
+<!-- Technical Illustration Card -->
+<div class="md:col-span-4 glass-panel p-6 flex flex-col items-center justify-center text-center">
+<div class="w-full aspect-square border border-primary/20 rounded-full flex items-center justify-center p-8 relative overflow-hidden">
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_center,#00dbe922,transparent)]"></div>
+<span class="material-symbols-outlined text-primary text-6xl opacity-50" data-icon="rocket_launch">rocket_launch</span>
+<div class="absolute w-full h-px bg-primary/20 top-1/2 left-0"></div>
+<div class="absolute h-full w-px bg-primary/20 left-1/2 top-0"></div>
+</div>
+<p class="font-label-caps text-label-caps text-primary mt-6">GLOBAL REACH MAP</p>
+<p class="text-xs text-on-surface-variant mt-2">NASA High Energy Astrophysics Science Archive Research Center (HEASARC)</p>
+</div>
+</div>
+</section>
+<!-- The Team Section -->
+<section class="py-24 bg-surface-container-low/40 backdrop-blur-sm">
+<div class="px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+<div class="mb-16 flex justify-between items-end">
+<div>
+<div class="hud-line mb-4 w-24"></div>
+<h2 class="font-headline-lg text-headline-lg text-primary uppercase tracking-wider">02. The Team</h2>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<!-- Member 1 -->
+<div class="group relative">
+<div class="glass-panel overflow-hidden transition-all duration-500 hover:border-primary/50">
+<div class="aspect-[16/9] relative overflow-hidden">
+<img class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" data-alt="A professional portrait of an experienced astronomer in a modern, darkened laboratory setting. He is wearing a dark academic sweater and glasses, looking thoughtfully into the camera. The background is softly blurred, showing glimpses of high-tech computer screens with celestial maps and astronomical data in cool blue and cyan tones. The lighting is cinematic, with a soft key light and a subtle rim light defining the profile." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhvl5I-YolF3-JVehEH5gzRfhezN5359EOsAahpFryBbPzTANxp8Dy4pycI0p-X1-6x_uaSOkGONYQwH9t-hARUNPLLkjDIRXxl6PPSnkzw79spsInwuFduuKnYPOOt-gzWkcDFX2K2nxdCAMPawsEiMBHwy7795x0GgwsW-vPcT-Y61JpW-cJQq_bDCxnyhJNzcgYY8_fpuzd2-2uvcrJrBt4LWIMbghyOcwSXsmngnWbsuGk8POc6c8_nfNYY9ivurbvZDHfNq9V"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent opacity-80"></div>
+</div>
+<div class="p-8 relative -mt-12">
+<h4 class="font-headline-lg text-headline-lg-mobile text-primary">Robert Nemiroff</h4>
+<p class="font-label-caps text-label-caps text-secondary mb-4">MICHIGAN TECHNOLOGICAL UNIVERSITY</p>
+<p class="text-on-surface-variant mb-6">A professor of physics, Robert co-created APOD in 1995 while at NASA Goddard. His expertise in gravitational lensing and gamma-ray bursts shapes the scientific narrative of the project.</p>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-primary cursor-pointer hover:scale-110 transition-transform" data-icon="link">link</span>
+<span class="material-symbols-outlined text-primary cursor-pointer hover:scale-110 transition-transform" data-icon="mail">mail</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Member 2 -->
+<div class="group relative">
+<div class="glass-panel overflow-hidden transition-all duration-500 hover:border-primary/50">
+<div class="aspect-[16/9] relative overflow-hidden">
+<img class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" data-alt="A sophisticated portrait of a senior NASA scientist in a professional observatory environment. He is wearing a sharp, dark suit without a tie, conveying a blend of academic prestige and modern leadership. Behind him, a large telescope silhouette is visible through a dark glass window under a starry night sky. The color palette is dominated by deep cosmic blues and sharp cyan accents, maintaining a high-contrast HUD aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsgKDbGCDR8A9eBvAQkUMJSRX2IvUXTFHk80ErHwpUYzhWg9omqSv1t-duBLa625AJv5eEZoTp_d0i6SfehyNmrpCbC7g91sXXVGT_hwv2IYGMlg9VhZVBO3PgufNqqZyt6SjXrGortwFbZh2SgQT84LAlg1WmYZM0zfB3Q7AnigIlai2ezoGwgT7nkHEKUCM0xswkTqWX6hAANHSwbLGkIHNToLwr9uoPkj9Te7Hcm_pyQwHYL1PQpgubO5fKa_mKtpZ2vBEMIQ-A"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent opacity-80"></div>
+</div>
+<div class="p-8 relative -mt-12">
+<h4 class="font-headline-lg text-headline-lg-mobile text-primary">Jerry Bonnell</h4>
+<p class="font-label-caps text-label-caps text-secondary mb-4">NASA GODDARD SPACE FLIGHT CENTER</p>
+<p class="text-on-surface-variant mb-6">A scientist at NASA Goddard, Jerry's work focuses on high-energy astrophysics. He provides the critical bridge between the scientific community and APOD's digital presence.</p>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-primary cursor-pointer hover:scale-110 transition-transform" data-icon="link">link</span>
+<span class="material-symbols-outlined text-primary cursor-pointer hover:scale-110 transition-transform" data-icon="mail">mail</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Educational Impact (Asymmetric Layout) -->
+<section class="py-24 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
+<div class="md:col-span-5 order-2 md:order-1">
+<div class="hud-line mb-4 w-12"></div>
+<h2 class="font-headline-lg text-headline-lg text-primary mb-8 uppercase tracking-wider">03. Educational Impact</h2>
+<p class="text-body-md text-on-surface-variant mb-6 leading-relaxed">
+                        APOD is used in thousands of classrooms around the world every day. From elementary schools to university-level astrophysics courses, the archive serves as a living textbook of space exploration.
+                    </p>
+<ul class="space-y-4">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="school">school</span>
+<span class="text-on-surface">Integrated into STEM curricula worldwide</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="auto_stories">auto_stories</span>
+<span class="text-on-surface">Archive of over 10,000 unique explanations</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="public">public</span>
+<span class="text-on-surface">Global community of contributors and observers</span>
+</li>
+</ul>
+</div>
+<div class="md:col-span-7 order-1 md:order-2">
+<div class="relative group">
+<div class="hud-corner hud-corner-tl -m-4"></div>
+<div class="hud-corner hud-corner-br -m-4"></div>
+<div class="glass-panel p-2">
+<img id="about-apod" class="w-full aspect-[4/3] object-cover" src="" alt="Astronomy Picture of the Day"/>
+</div>
+<div class="absolute -bottom-6 -left-6 glass-panel p-6 max-w-xs hidden md:block">
+<p class="font-data-point text-label-caps text-primary">"APOD makes the universe accessible to everyone."</p>
+<p class="text-[10px] text-on-surface-variant mt-2">— Dr. Samantha Wu, Astro-Educator</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA / Connect -->
+<section class="py-24 px-margin-mobile md:px-margin-desktop text-center">
+<div class="max-w-2xl mx-auto glass-panel p-12 border-primary/20 bg-primary/5">
+<h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary mb-6">Contribute to Science</h2>
+<p class="text-on-surface-variant mb-8">Have you captured a stunning piece of the cosmos? Submit your work to be featured as a future Astronomy Picture of the Day.</p>
+<button class="bg-primary text-on-primary font-label-caps px-10 py-4 rounded-full hover:bg-primary-fixed transition-colors tracking-widest uppercase">
+                    Submit Your Image
+                </button>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full mt-20 bg-surface-container-lowest/80 backdrop-blur-md border-t border-outline-variant/10">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter px-margin-desktop py-12 max-w-container-max mx-auto">
+<div class="flex flex-col gap-4">
+<span class="font-label-caps text-label-caps text-primary">NASA APOD</span>
+<p class="font-body-md text-body-md text-on-surface-variant/70">Exploring the cosmos through the lens of world-class photography and scientific rigor.</p>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="font-label-caps text-label-caps text-primary">LINKS</h4>
+<div class="grid grid-cols-2 gap-2">
+<a class="text-on-surface-variant hover:text-secondary transition-colors font-body-md text-sm" href="#">NASA.gov</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors font-body-md text-sm" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors font-body-md text-sm" href="#">Contact</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors font-body-md text-sm" href="#">API Documentation</a>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="font-label-caps text-label-caps text-primary">COPYRIGHT</h4>
+<p class="font-body-md text-body-md text-on-surface-variant/70">
+                    © ishaqalbalushi693@gmail.com
+                </p>
+</div>
+</div>
+</footer>
+<script>
+        // Load APOD image dynamically
+        fetch('/api/apod/today').then(r => r.json()).then(d => {
+            const img = document.getElementById('about-apod');
+            if (img) img.src = d.hdurl || d.url;
+        }).catch(() => {});
+
+        // Micro-interactions for HUD elements
+        document.addEventListener('mousemove', (e) => {
+            const panels = document.querySelectorAll('.glass-panel');
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+
+            panels.forEach(panel => {
+                const shiftX = (x - 0.5) * 10;
+                const shiftY = (y - 0.5) * 10;
+                // Subtle parallax effect on borders
+                panel.style.boxShadow = `${shiftX}px ${shiftY}px 30px rgba(0, 219, 233, 0.05)`;
+            });
+        });
+
+    const chatbotBtn = document.createElement('div');
+    chatbotBtn.id = 'chatbot-btn';
+    chatbotBtn.innerHTML = '<span class="material-symbols-outlined">smart_toy</span>';
+    document.body.appendChild(chatbotBtn);
+    const chatbotWin = document.createElement('div');
+    chatbotWin.id = 'chatbot-window';
+    chatbotWin.innerHTML = '<div id="chatbot-header"><span>▲ COSMOS ASSISTANT</span><button id="chatbot-close">close</button></div><div id="chatbot-messages"><div class="chatbot-msg bot">Hello, I\'m your Cosmos Assistant. Ask me about APOD, space, or use the site!</div></div><div id="chatbot-input-area"><input id="chatbot-input" placeholder="Ask me anything..." autocomplete="off"/><button id="chatbot-send">Send</button></div>';
+    document.body.appendChild(chatbotWin);
+    const chatMessages = document.getElementById('chatbot-messages');
+    const chatInput = document.getElementById('chatbot-input');
+    const chatSend = document.getElementById('chatbot-send');
+    function addMessage(text, role) { const div = document.createElement('div'); div.className = 'chatbot-msg ' + role; div.textContent = text; chatMessages.appendChild(div); chatMessages.scrollTop = chatMessages.scrollHeight; }
+    function showTyping() { const div = document.createElement('div'); div.className = 'chatbot-msg bot typing-dots'; div.id = 'typing-indicator'; div.innerHTML = '<span></span><span></span><span></span>'; chatMessages.appendChild(div); chatMessages.scrollTop = chatMessages.scrollHeight; }
+    function hideTyping() { const el = document.getElementById('typing-indicator'); if (el) el.remove(); }
+    async function handleChat(msg) {
+      try { const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg }) }); const d = await r.json(); return d.reply || 'Sorry, I could not process that.'; }
+      catch(e) { return 'Sorry, I am having trouble connecting. Please try again later.'; }
+    }
+    async function sendMessage() {
+      const text = chatInput.value.trim();
+      if (!text) return;
+      addMessage(text, 'user');
+      chatInput.value = '';
+      showTyping();
+      const reply = await handleChat(text);
+      hideTyping();
+      addMessage(reply, 'bot');
+    }
+    chatbotBtn.addEventListener('click', () => chatbotWin.classList.toggle('open'));
+    document.getElementById('chatbot-close').addEventListener('click', () => chatbotWin.classList.remove('open'));
+    chatSend.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
+    </script>
+</body></html>

@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NASA APOD Gallery | Discover the Cosmos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            background-color: #0e0e0e; /* Deep obsidian black from surface-container-lowest */
+            color: #e5e2e1;
+        }
+        .glass-panel {
+            background: rgba(32, 31, 31, 0.4);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        }
+        /* Dynamic Masonry Layout */
+        .masonry-grid {
+            columns: 1;
+            column-gap: 24px;
+        }
+        @media (min-width: 640px) { .masonry-grid { columns: 2; } }
+        @media (min-width: 1024px) { .masonry-grid { columns: 3; } }
+        
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 24px;
+        }
+        
+        .hud-corner {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-color: #00dbe9;
+            opacity: 0.5;
+        }
+        
+        .cosmic-button {
+            position: relative;
+            background: linear-gradient(90deg, rgba(0, 219, 233, 0.1), rgba(162, 15, 255, 0.1));
+            border: 1px solid rgba(0, 219, 233, 0.3);
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .cosmic-button:hover {
+            border-color: #00dbe9;
+            box-shadow: 0 0 30px rgba(0, 219, 233, 0.2);
+            transform: translateY(-2px);
+        }
+        .cosmic-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: 0.5s;
+        }
+        .cosmic-button:hover::before {
+            left: 100%;
+        }
+
+        .filter-input:focus ~ .filter-icon {
+            color: #00dbe9;
+            transform: scale(1.1);
+        }
+    #chatbot-btn {
+      position: fixed; bottom: 24px; right: 24px; z-index: 999;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, #00dbe9, #a20fff);
+      border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px rgba(0,219,233,0.3); transition: all 0.3s;
+    }
+    #chatbot-btn:hover { transform: scale(1.1); box-shadow: 0 6px 30px rgba(0,219,233,0.5); }
+    #chatbot-btn .material-symbols-outlined { color: #00363a; font-size: 28px; }
+    #chatbot-window {
+      position: fixed; bottom: 90px; right: 24px; z-index: 998;
+      width: 360px; height: 500px; max-height: calc(100vh - 200px);
+      background: rgba(19,19,19,0.95); backdrop-filter: blur(20px);
+      border: 1px solid rgba(0,219,233,0.2); border-radius: 16px;
+      display: none; flex-direction: column; overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.8);
+    }
+    #chatbot-window.open { display: flex; }
+    #chatbot-header { padding: 16px 20px; background: rgba(0,219,233,0.1); border-bottom: 1px solid rgba(0,219,233,0.15); display: flex; justify-content: space-between; align-items: center; }
+    #chatbot-header span { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #dbfcff; letter-spacing: 0.05em; }
+    #chatbot-header button { background: none; border: none; color: #b9cacb; cursor: pointer; font-size: 20px; font-family: 'Material Symbols Outlined'; }
+    #chatbot-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+    #chatbot-messages::-webkit-scrollbar { width: 4px; }
+    #chatbot-messages::-webkit-scrollbar-thumb { background: #3b494b; border-radius: 4px; }
+    .chatbot-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 13px; line-height: 1.5; animation: fadeIn 0.3s ease; }
+    .chatbot-msg.bot { align-self: flex-start; background: rgba(32,31,31,0.8); color: #e5e2e1; border: 1px solid rgba(255,255,255,0.05); }
+    .chatbot-msg.user { align-self: flex-end; background: rgba(0,219,233,0.15); color: #dbfcff; border: 1px solid rgba(0,219,233,0.2); }
+    #chatbot-input-area { display: flex; padding: 12px 16px; gap: 8px; border-top: 1px solid rgba(255,255,255,0.05); }
+    #chatbot-input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 14px; color: #e5e2e1; font-family: 'Inter', sans-serif; font-size: 13px; outline: none; }
+    #chatbot-input:focus { border-color: rgba(0,219,233,0.4); }
+    #chatbot-send { background: rgba(0,219,233,0.2); border: 1px solid rgba(0,219,233,0.3); border-radius: 8px; padding: 8px 16px; color: #dbfcff; cursor: pointer; font-size: 13px; }
+    #chatbot-send:hover { background: rgba(0,219,233,0.3); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .typing-dots { display: flex; gap: 4px; padding: 10px 14px; align-items: center; }
+    .typing-dots span { width: 6px; height: 6px; border-radius: 50%; background: #b9cacb; animation: bounce 1.4s infinite; }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-4px); } }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-dim": "#131313",
+                      "on-primary-fixed-variant": "#004f54",
+                      "surface-container-high": "#2a2a2a",
+                      "on-background": "#e5e2e1",
+                      "outline": "#849495",
+                      "primary": "#dbfcff",
+                      "secondary": "#e1b6ff",
+                      "on-secondary-container": "#faebff",
+                      "error-container": "#93000a",
+                      "inverse-surface": "#e5e2e1",
+                      "on-secondary-fixed-variant": "#6c00ae",
+                      "secondary-fixed": "#f2daff",
+                      "on-secondary-fixed": "#2e004e",
+                      "secondary-container": "#a20fff",
+                      "on-primary": "#00363a",
+                      "secondary-fixed-dim": "#e1b6ff",
+                      "surface": "#131313",
+                      "surface-container-highest": "#353534",
+                      "primary-container": "#00f0ff",
+                      "on-error-container": "#ffdad6",
+                      "background": "#131313",
+                      "on-tertiary-fixed-variant": "#444652",
+                      "surface-variant": "#353534",
+                      "surface-container-low": "#1c1b1b",
+                      "inverse-primary": "#006970",
+                      "on-primary-container": "#006970",
+                      "on-surface": "#e5e2e1",
+                      "surface-tint": "#00dbe9",
+                      "tertiary-fixed": "#e1e1f0",
+                      "on-error": "#690005",
+                      "outline-variant": "#3b494b",
+                      "inverse-on-surface": "#313030",
+                      "tertiary-fixed-dim": "#c5c5d4",
+                      "on-tertiary-container": "#5c5e6a",
+                      "on-primary-fixed": "#002022",
+                      "primary-fixed": "#7df4ff",
+                      "surface-container-lowest": "#0e0e0e",
+                      "tertiary": "#f6f4ff",
+                      "surface-bright": "#3a3939",
+                      "on-secondary": "#4c007c",
+                      "surface-container": "#201f1f",
+                      "tertiary-container": "#d8d8e7",
+                      "error": "#ffb4ab",
+                      "on-tertiary-fixed": "#191b26",
+                      "on-tertiary": "#2e303b",
+                      "primary-fixed-dim": "#00dbe9",
+                      "on-surface-variant": "#b9cacb"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "unit": "8px",
+                      "gutter": "24px",
+                      "margin-desktop": "64px",
+                      "margin-mobile": "20px",
+                      "container-max": "1440px"
+              },
+              "fontFamily": {
+                      "display-lg-mobile": ["Space Grotesk"],
+                      "headline-lg": ["Space Grotesk"],
+                      "data-point": ["JetBrains Mono"],
+                      "display-lg": ["Space Grotesk"],
+                      "headline-lg-mobile": ["Space Grotesk"],
+                      "label-caps": ["JetBrains Mono"],
+                      "body-md": ["Inter"]
+              },
+              "fontSize": {
+                      "display-lg-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                      "data-point": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "display-lg": ["72px", {"lineHeight": "80px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "500"}],
+                      "body-md": ["16px", {"lineHeight": "28px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+      </script>
+</head>
+<body class="font-body-md text-on-surface bg-surface-container-lowest selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 bg-surface/40 backdrop-blur-xl border-b border-outline-variant/20">
+<nav class="flex justify-between items-center px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="font-display-lg text-headline-lg-mobile tracking-tighter text-primary">NASA APOD</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="/">Home</a>
+<a class="font-label-caps text-label-caps text-primary font-bold border-b-2 border-primary pb-1" href="/gallery">Gallery</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="/about">About</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="/community">Community</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="/api-docs">API</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-primary/10 transition-all duration-300 ease-in-out rounded-full text-primary">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</nav>
+</header>
+<main class="pt-32 pb-20 max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop min-h-screen">
+<!-- Sleek Integrated Search & Filter HUD -->
+<section class="mb-12 relative">
+<div class="flex items-center gap-2 mb-6 text-primary/50 font-label-caps text-[10px] tracking-widest">
+<span class="w-12 h-[1px] bg-primary/20"></span>
+            OBSERVATORY_LOG_SYSTEM // v.2.5
+        </div>
+<div class="glass-panel p-1 rounded-xl relative group">
+<!-- HUD Elements -->
+<div class="hud-corner top-0 left-0 border-t-2 border-l-2 m-2"></div>
+<div class="hud-corner top-0 right-0 border-t-2 border-r-2 m-2"></div>
+<div class="hud-corner bottom-0 left-0 border-b-2 border-l-2 m-2"></div>
+<div class="hud-corner bottom-0 right-0 border-b-2 border-r-2 m-2"></div>
+<div class="flex flex-col lg:flex-row gap-4 p-4 lg:p-6 bg-surface/20 rounded-lg">
+<!-- Search -->
+<div class="flex-1 relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/60 filter-icon transition-all duration-300" data-icon="search">search</span>
+<input class="filter-input w-full bg-surface-container-low/30 border border-outline-variant/30 rounded-lg focus:border-primary/50 focus:ring-0 text-on-surface py-3.5 pl-12 pr-4 font-data-point placeholder:text-on-surface-variant/40 transition-all" placeholder="SCAN_FOR_KEYWORDS (NEBULA, GALAXY...)" type="text"/>
+</div>
+<div class="flex flex-col sm:flex-row gap-4">
+<!-- Date -->
+<div class="relative min-w-[180px]">
+<input class="w-full bg-surface-container-low/30 border border-outline-variant/30 rounded-lg focus:border-primary/50 focus:ring-0 text-on-surface py-3.5 px-4 font-data-point appearance-none" type="date"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant/60 pointer-events-none" data-icon="calendar_month">calendar_month</span>
+</div>
+<!-- Sort -->
+<div class="relative min-w-[200px]">
+<select class="w-full bg-surface-container-low/30 border border-outline-variant/30 rounded-lg focus:border-primary/50 focus:ring-0 text-on-surface py-3.5 px-4 font-data-point appearance-none">
+<option>CHRONO_DESC</option>
+<option>CHRONO_ASC</option>
+<option>MOST_VIEWED</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant/60 pointer-events-none" data-icon="swap_vert">swap_vert</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Filter Chips -->
+<div class="flex flex-wrap items-center gap-3 mt-8">
+<span class="font-label-caps text-[10px] text-on-surface-variant/60 mr-2">QUICK_FILTERS:</span>
+<button class="filter-chip px-5 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-primary font-label-caps text-[11px] hover:bg-primary/20 hover:border-primary/40 transition-all flex items-center gap-2" data-filter="galaxy">
+<span class="filter-dot w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                GALAXIES
+            </button>
+<button class="filter-chip px-5 py-1.5 rounded-full border border-outline-variant/30 bg-transparent text-on-surface-variant font-label-caps text-[11px] hover:border-primary hover:text-primary transition-all flex items-center gap-2" data-filter="nebula"><span class="filter-dot w-1.5 h-1.5 rounded-full bg-primary animate-pulse" style="display:none"></span>NEBULAE</button>
+<button class="filter-chip px-5 py-1.5 rounded-full border border-outline-variant/30 bg-transparent text-on-surface-variant font-label-caps text-[11px] hover:border-primary hover:text-primary transition-all flex items-center gap-2" data-filter="planet"><span class="filter-dot w-1.5 h-1.5 rounded-full bg-primary animate-pulse" style="display:none"></span>PLANETS</button>
+<button class="filter-chip px-5 py-1.5 rounded-full border border-outline-variant/30 bg-transparent text-on-surface-variant font-label-caps text-[11px] hover:border-primary hover:text-primary transition-all flex items-center gap-2" data-filter="deep"><span class="filter-dot w-1.5 h-1.5 rounded-full bg-primary animate-pulse" style="display:none"></span>DEEP_SPACE</button>
+<button class="filter-chip px-5 py-1.5 rounded-full border border-outline-variant/30 bg-transparent text-on-surface-variant font-label-caps text-[11px] hover:border-primary hover:text-primary transition-all flex items-center gap-2" data-filter="solar"><span class="filter-dot w-1.5 h-1.5 rounded-full bg-primary animate-pulse" style="display:none"></span>SOLAR_SYSTEM</button>
+</div>
+</section>
+<!-- Dynamic Discovery Grid -->
+<div class="masonry-grid" id="gallery-grid">
+<div class="text-center py-20 text-on-surface-variant font-data-point" id="gallery-loading">INITIALIZING DATA STREAM...</div>
+</div>
+<!-- Cosmic Pagination -->
+<div class="mt-20 flex flex-col items-center">
+<div class="h-[1px] w-48 bg-gradient-to-r from-transparent via-primary/50 to-transparent mb-12"></div>
+<button id="load-more" class="cosmic-button px-12 py-4 rounded-lg flex items-center gap-4 group">
+<span class="font-label-caps text-label-caps text-primary tracking-[0.2em]">INITIALIZE_LOAD_SEQUENCE</span>
+<span class="material-symbols-outlined text-primary group-hover:translate-y-1 transition-transform" data-icon="expand_more">expand_more</span>
+</button>
+<div class="mt-8 flex items-center gap-4">
+<div class="w-1.5 h-1.5 rounded-full bg-primary/20"></div>
+<div id="streaming-records" class="font-data-point text-[10px] text-on-surface-variant/40 uppercase tracking-widest">
+                STREAMING_RECORDS: 0 // LOADING...
+            </div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/20"></div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full mt-20 bg-surface-container-lowest/80 backdrop-blur-md border-t border-outline-variant/10">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter px-margin-desktop py-12 max-w-container-max mx-auto">
+<div class="space-y-4">
+<div class="font-label-caps text-label-caps text-primary">NASA APOD</div>
+<p class="font-body-md text-on-surface-variant text-sm max-w-xs leading-relaxed">Exploring the universe one image at a time since 1995. A collaboration between NASA and MTU.</p>
+</div>
+<div class="flex flex-col gap-3">
+<span class="font-label-caps text-[10px] text-primary/50 tracking-widest mb-2">QUICK_LINKS</span>
+<a class="font-body-md text-on-surface-variant hover:text-secondary transition-colors text-sm" href="#">NASA.gov</a>
+<a class="font-body-md text-on-surface-variant hover:text-secondary transition-colors text-sm" href="#">Privacy Policy</a>
+<a class="font-body-md text-on-surface-variant hover:text-secondary transition-colors text-sm" href="#">Contact</a>
+<a class="font-body-md text-on-surface-variant hover:text-secondary transition-colors text-sm" href="#">API Documentation</a>
+</div>
+<div class="flex flex-col md:items-end justify-between">
+<div class="text-right">
+<span class="material-symbols-outlined text-primary-container opacity-40 text-4xl animate-pulse" data-icon="rocket_launch">rocket_launch</span>
+</div>
+<div class="font-body-md text-body-md text-on-surface-variant opacity-60 text-[10px] md:text-right mt-8">
+                © ishaqalbalushi693@gmail.com
+            </div>
+</div>
+</div>
+</footer>
+<!-- Atmosphere & Scroll Progress -->
+<div class="fixed top-0 left-0 h-0.5 bg-gradient-to-r from-primary via-secondary to-primary-container z-[60] transition-all duration-100" id="scroll-progress" style="width: 0%"></div>
+<script>
+    let allItems = [];
+    let displayedCount = 0;
+    const pageSize = 12;
+    let isLoading = false;
+    let hasMore = true;
+
+    function formatDate(dateStr) {
+        const d = new Date(dateStr + 'T00:00:00');
+        return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }).toUpperCase();
+    }
+
+    function extractTag(title, explanation) {
+        const text = ((title || '') + ' ' + (explanation || '')).toUpperCase();
+        const categories = [
+            { name: 'NEBULA', keywords: ['NEBULA', 'NEBULAE', 'ORION NEBULA', 'HORSEHEAD', 'PILLARS OF CREATION', 'STELLAR NURSERY', 'EMISSION NEBULA'] },
+            { name: 'GALAXY', keywords: ['GALAXY', 'GALAXIES', 'ANDROMEDA', 'MILKY WAY', 'SPIRAL GALAXY', 'COLLISION', 'MERGING'] },
+            { name: 'BLACK HOLE', keywords: ['BLACK HOLE', 'EVENT HORIZON', 'QUASAR', 'PULSAR'] },
+            { name: 'SUPERNOVA', keywords: ['SUPERNOVA', 'CRAB NEBULA', 'CYGNUS LOOP', 'REMNANT'] },
+            { name: 'STAR CLUSTER', keywords: ['CLUSTER', 'GLOBULAR', 'PLEIADES', 'OPEN CLUSTER'] },
+            { name: 'PLANET', keywords: ['PLANET', 'MARS', 'JUPITER', 'SATURN', 'VENUS', 'EXOPLANET', 'EARTH'] },
+            { name: 'MOON', keywords: ['MOON', 'LUNAR', 'TITAN', 'EUROPA', 'CRATER'] },
+            { name: 'COMET', keywords: ['COMET', 'ASTEROID', 'METEOR', 'OORT', 'KUIPER'] },
+            { name: 'SUN', keywords: ['SOLAR', 'SUNSPOT', 'CORONA', 'SOLAR FLARE'] },
+            { name: 'AURORA', keywords: ['AURORA', 'BOREALIS'] },
+            { name: 'HUBBLE', keywords: ['HUBBLE', 'JWST', 'JAMES WEBB', 'TELESCOPE'] },
+            { name: 'NEBULA', keywords: ['GLOBULES', 'THACKERAY'] }
+        ];
+        for (const cat of categories) {
+            if (cat.keywords.some(k => text.includes(k))) return cat.name;
+        }
+        return 'DEEP SPACE';
+    }
+
+    function nasaApodUrl(dateStr) {
+        const d = new Date(dateStr + 'T00:00:00');
+        const yy = String(d.getFullYear()).slice(2);
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `https://apod.nasa.gov/apod/ap${yy}${mm}${dd}.html`;
+    }
+
+    function createCard(item) {
+        const art = document.createElement('article');
+        art.className = 'masonry-item glass-panel rounded-xl group cursor-pointer relative overflow-hidden transition-all duration-700';
+        const imgUrl = item.hdurl || item.url || '';
+        const tag = extractTag(item.title, item.explanation);
+        art.innerHTML = `
+            <div class="overflow-hidden relative">
+                <img class="w-full h-auto transition-transform duration-1000 group-hover:scale-105" src="${imgUrl}" alt="${item.title || ''}"/>
+                <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            </div>
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-3">
+                    <span class="font-data-point text-primary/60 text-[10px] tracking-widest">${formatDate(item.date)}</span>
+                    <span class="px-2 py-0.5 border border-primary/20 text-[9px] font-label-caps text-primary/80 rounded bg-primary/5">${tag}</span>
+                </div>
+                <h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface group-hover:text-primary transition-colors duration-300">${item.title || 'Untitled'}</h3>
+                <p class="text-on-surface-variant text-sm font-body-md mt-3 opacity-0 group-hover:opacity-100 h-0 group-hover:h-auto transition-all duration-500 overflow-hidden">${(item.explanation || '').slice(0, 120)}...</p>
+            </div>`;
+        art.addEventListener('click', () => {
+            window.open(nasaApodUrl(item.date), '_blank');
+        });
+        return art;
+    }
+
+    function applyScrollParallax() {
+        document.querySelectorAll('.masonry-item').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = (y - centerY) / 50;
+                const rotateY = (centerX - x) / 50;
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg)`;
+            });
+        });
+    }
+
+    function appendCards() {
+        const grid = document.getElementById('gallery-grid');
+        const loading = document.getElementById('gallery-loading');
+        if (loading) loading.remove();
+
+        const next = allItems.slice(displayedCount, displayedCount + pageSize);
+        next.forEach(item => {
+            grid.appendChild(createCard(item));
+        });
+        displayedCount += next.length;
+
+        document.getElementById('streaming-records').textContent =
+            `STREAMING_RECORDS: ${displayedCount} // TOTAL_ARCHIVE: ${allItems.length}`;
+
+        const loadMoreBtn = document.getElementById('load-more');
+        if (!hasMore || displayedCount >= allItems.length) {
+            loadMoreBtn.style.display = 'none';
+        } else {
+            loadMoreBtn.style.display = 'flex';
+        }
+
+        applyScrollParallax();
+    }
+
+    async function loadMore() {
+        if (isLoading || !hasMore) return;
+        isLoading = true;
+
+        const loadMoreBtn = document.getElementById('load-more');
+        loadMoreBtn.innerHTML = '<span class="material-symbols-outlined text-primary animate-spin" data-icon="progress_activity">progress_activity</span><span class="font-label-caps text-label-caps text-primary/60 tracking-[0.2em]">LOADING...</span>';
+
+        try {
+            const res = await fetch('/api/apod/random?count=' + pageSize);
+            const newItems = await res.json();
+            if (!newItems || newItems.length === 0) {
+                hasMore = false;
+            } else {
+                allItems.push(...newItems);
+                appendCards();
+            }
+        } catch (err) {
+            console.error('Failed to load more:', err);
+        }
+
+        isLoading = false;
+        if (hasMore) {
+            loadMoreBtn.innerHTML = '<span class="font-label-caps text-label-caps text-primary tracking-[0.2em]">INITIALIZE_LOAD_SEQUENCE</span><span class="material-symbols-outlined text-primary group-hover:translate-y-1 transition-transform" data-icon="expand_more">expand_more</span>';
+        }
+    }
+
+    async function loadGallery() {
+        try {
+            const res = await fetch('/api/apod/random?count=' + pageSize);
+            const initial = await res.json();
+            if (!initial || initial.length === 0) {
+                hasMore = false;
+            } else {
+                allItems.push(...initial);
+                appendCards();
+            }
+        } catch (err) {
+            console.error('Failed to load gallery:', err);
+            document.getElementById('gallery-loading').textContent = 'ERROR: FAILED TO CONNECT TO DATA STREAM';
+        }
+    }
+
+    document.getElementById('load-more').addEventListener('click', loadMore);
+    loadGallery();
+
+    let scrollTimeout;
+    window.addEventListener('scroll', () => {
+        const scrollPercent = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+        document.getElementById('scroll-progress').style.width = scrollPercent + '%';
+
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+            if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 600) {
+                loadMore();
+            }
+        }, 200);
+    });
+
+    let activeFilter = null;
+
+    function applyFilters() {
+        const q = (document.querySelector('.filter-input')?.value || '').toLowerCase();
+        document.querySelectorAll('.masonry-item').forEach(card => {
+            const title = (card.querySelector('h3')?.textContent || '').toLowerCase();
+            const tag = (card.querySelector('[class*="font-label-caps"]')?.textContent || '').toLowerCase().trim();
+            const explanation = (card.querySelector('p')?.textContent || '').toLowerCase();
+            const date = (card.querySelector('.font-data-point')?.textContent || '').toLowerCase();
+            const matchesSearch = !q || title.includes(q) || explanation.includes(q) || date.includes(q);
+            const matchesFilter = !activeFilter || tag.includes(activeFilter);
+            card.style.display = matchesSearch && matchesFilter ? '' : 'none';
+        });
+    }
+
+    const searchInput = document.querySelector('.filter-input');
+    if (searchInput) searchInput.addEventListener('input', applyFilters);
+
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const filter = chip.dataset.filter;
+            if (activeFilter === filter) {
+                activeFilter = null;
+                chip.classList.remove('bg-primary/5', 'text-primary', 'border-primary/20');
+                chip.classList.add('bg-transparent', 'text-on-surface-variant', 'border-outline-variant/30');
+                const dot = chip.querySelector('.filter-dot');
+                if (dot) dot.style.display = 'none';
+            } else {
+                document.querySelectorAll('.filter-chip').forEach(c => {
+                    c.classList.remove('bg-primary/5', 'text-primary', 'border-primary/20');
+                    c.classList.add('bg-transparent', 'text-on-surface-variant', 'border-outline-variant/30');
+                    const d = c.querySelector('.filter-dot');
+                    if (d) d.style.display = 'none';
+                });
+                activeFilter = filter;
+                chip.classList.remove('bg-transparent', 'text-on-surface-variant', 'border-outline-variant/30');
+                chip.classList.add('bg-primary/5', 'text-primary', 'border-primary/20');
+                const dot = chip.querySelector('.filter-dot');
+                if (dot) dot.style.display = 'inline-block';
+            }
+            applyFilters();
+        });
+    });
+
+    const sortSelect = document.querySelector('select');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', () => {
+            const val = sortSelect.value;
+            if (val === 'CHRONO_DESC') {
+                allItems.sort((a, b) => b.date.localeCompare(a.date));
+            } else if (val === 'CHRONO_ASC') {
+                allItems.sort((a, b) => a.date.localeCompare(b.date));
+            }
+            document.getElementById('gallery-grid').innerHTML = '';
+            displayedCount = 0;
+            appendCards();
+        });
+    }
+
+    const dateInput = document.querySelector('input[type="date"]');
+    if (dateInput) {
+        dateInput.addEventListener('change', async (e) => {
+            if (e.target.value) {
+                document.getElementById('gallery-grid').innerHTML = '<div class="text-center py-20 text-on-surface-variant font-data-point" id="gallery-loading">SEARCHING ARCHIVES...</div>';
+                displayedCount = 0;
+                try {
+                    const res = await fetch(`/api/apod?date=${e.target.value}`);
+                    const data = await res.json();
+                    allItems = [data];
+                    appendCards();
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+        });
+    }
+
+    const chatbotBtn = document.createElement('div');
+    chatbotBtn.id = 'chatbot-btn';
+    chatbotBtn.innerHTML = '<span class="material-symbols-outlined">smart_toy</span>';
+    document.body.appendChild(chatbotBtn);
+    const chatbotWin = document.createElement('div');
+    chatbotWin.id = 'chatbot-window';
+    chatbotWin.innerHTML = '<div id="chatbot-header"><span>▲ COSMOS ASSISTANT</span><button id="chatbot-close">close</button></div><div id="chatbot-messages"><div class="chatbot-msg bot">Hello, I\'m your Cosmos Assistant. Ask me about APOD, space, or use the site!</div></div><div id="chatbot-input-area"><input id="chatbot-input" placeholder="Ask me anything..." autocomplete="off"/><button id="chatbot-send">Send</button></div>';
+    document.body.appendChild(chatbotWin);
+    const chatMessages = document.getElementById('chatbot-messages');
+    const chatInput = document.getElementById('chatbot-input');
+    const chatSend = document.getElementById('chatbot-send');
+    function addMessage(text, role) { const div = document.createElement('div'); div.className = 'chatbot-msg ' + role; div.textContent = text; chatMessages.appendChild(div); chatMessages.scrollTop = chatMessages.scrollHeight; }
+    function showTyping() { const div = document.createElement('div'); div.className = 'chatbot-msg bot typing-dots'; div.id = 'typing-indicator'; div.innerHTML = '<span></span><span></span><span></span>'; chatMessages.appendChild(div); chatMessages.scrollTop = chatMessages.scrollHeight; }
+    function hideTyping() { const el = document.getElementById('typing-indicator'); if (el) el.remove(); }
+    async function handleChat(msg) {
+      try { const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg }) }); const d = await r.json(); return d.reply || 'Sorry, I could not process that.'; }
+      catch(e) { return 'Sorry, I am having trouble connecting. Please try again later.'; }
+    }
+    async function sendMessage() {
+      const text = chatInput.value.trim();
+      if (!text) return;
+      addMessage(text, 'user');
+      chatInput.value = '';
+      showTyping();
+      const reply = await handleChat(text);
+      hideTyping();
+      addMessage(reply, 'bot');
+    }
+    chatbotBtn.addEventListener('click', () => chatbotWin.classList.toggle('open'));
+    document.getElementById('chatbot-close').addEventListener('click', () => chatbotWin.classList.remove('open'));
+    chatSend.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
+</script>
+</body></html>
